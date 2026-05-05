@@ -6,4 +6,31 @@
 <meta name="apple-mobile-web-app-title" content="100のやりたい" />
 <title>100のやりたいことリスト｜200の問い #086</title>
 <style>html, body { background: #f0ede8; margin: 0; padding: 0; } #root { background: #f0ede8; min-height: 100vh; }</style>
-</head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>
+    <script>
+      // ?_export=1 でアクセスされた時、自身のlocalStorage履歴を親windowに送信
+      (function() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          if (params.get("_export") !== "1") return;
+          if (window.parent === window) return; // 親が無い場合は無視
+          var historyKey = null;
+          var data = null;
+          for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (key && /^app\d{2,3}_history_v1$/.test(key)) {
+              historyKey = key;
+              try { data = JSON.parse(localStorage.getItem(key) || "[]"); } catch(e) {}
+              break;
+            }
+          }
+          var match = (historyKey || "").match(/^app(\d{2,3})/);
+          var appId = match ? match[1] : "";
+          window.parent.postMessage({
+            type: "TOI_EXPORT",
+            payload: { appId: appId, history: Array.isArray(data) ? data : [] }
+          }, "*");
+        } catch (e) {}
+      })();
+    </script>
+
+  </head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>
